@@ -3,7 +3,7 @@
 # S3 object copy test using AWS CLI
 # Creates bucket, puts source object, copies it, and verifies the copy
 
-set -e
+set -Eeuo pipefail
 
 # Helper function to get environment variable with default
 env_var() {

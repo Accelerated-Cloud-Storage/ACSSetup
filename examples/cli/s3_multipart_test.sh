@@ -3,7 +3,7 @@
 # S3 multipart upload test using AWS CLI
 # Creates bucket, performs multipart upload with 2 parts, and verifies
 
-set -e
+set -Eeuo pipefail
 
 # Helper function to get environment variable with default
 env_var() {
@@ -123,9 +123,8 @@ aws s3api complete-multipart-upload --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" 
 echo "Completed MPU"
 
 # Verify with HEAD
-HEAD_OUTPUT=$(aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
-    --endpoint-url "$S3_ENDPOINT")
-HEAD_SIZE=$(echo "$HEAD_OUTPUT" | grep -o '"ContentLength": [0-9]*' | grep -o '[0-9]*')
+HEAD_SIZE=$(aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
+    --endpoint-url "$S3_ENDPOINT" --query 'ContentLength' --output text)
 
 if [ "$HEAD_SIZE" != "$TOTAL_SIZE" ]; then
     echo "ERROR: Head size mismatch after MPU" >&2
