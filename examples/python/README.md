@@ -1,6 +1,6 @@
 ### S3 Examples (boto3)
 
-These examples demonstrate basic S3-compatible operations against your object storage.
+These examples demonstrate S3-compatible operations using boto3, the AWS SDK for Python. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
 
 ### Prerequisites
 

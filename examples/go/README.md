@@ -1,6 +1,6 @@
 ### S3 Examples (Go, AWS SDK v2)
 
-These examples mirror the Python ones using the AWS SDK for Go v2.
+These examples demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
 
 ### Prerequisites
 
