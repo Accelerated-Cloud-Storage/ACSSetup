@@ -2,6 +2,7 @@
 import os
 import sys
 import uuid
+from contextlib import closing
 from datetime import datetime
 
 import boto3
@@ -56,7 +57,8 @@ def main() -> int:
 
         # Verify
         g = s3.get_object(Bucket=bucket_name, Key=dst_key)
-        data = g["Body"].read()
+        with closing(g["Body"]) as body_stream:
+            data = body_stream.read()
         if data != body:
             print("ERROR: Copied object content mismatch", file=sys.stderr)
             return 2
