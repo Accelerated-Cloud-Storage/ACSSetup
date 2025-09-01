@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+import os
+import sys
+import uuid
+from contextlib import closing
+from datetime import datetime
+
+import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
+
+
+def env(key: str, default: str) -> str:
+    value = os.getenv(key)
+    return value if value else default
+
+
+def main() -> int:
+    # Configuration (override via env vars if needed)
+    endpoint_url = env("S3_ENDPOINT", "https://acceleratedprod.com")
+    region = env("S3_REGION", "global")
+    bucket_prefix = env("BUCKET_PREFIX", "smoketest")
+    access_key = env("S3_ACCESS_KEY", "ExampleAccessKey")
+    secret_key = env("S3_SECRET_KEY", "ExampleSecretKey")
+    addressing_style = env("S3_ADDRESSING_STYLE", "virtual").lower()
+    if addressing_style not in ("auto", "virtual", "path"):
+        addressing_style = "virtual"
+
+    # Create S3 client
+    s3 = boto3.client(
+        "s3",
+        endpoint_url=endpoint_url,
+        region_name=region,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        config=Config(signature_version="s3v4", s3={"addressing_style": addressing_style}),
+    )
+
+    # Unique bucket name compatible with S3 naming rules
+    bucket_name = f"{bucket_prefix}-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8]}".lower()
+    object_key = "hello.txt"
+    body = b"hello world\n"
+
+    print(f"Using endpoint: {endpoint_url}")
+    print(f"Region:        {region}")
+    print(f"Bucket:        {bucket_name}")
+    print(f"Addressing:    {addressing_style}")
+
+    try:
+        # Create bucket
+        s3.create_bucket(Bucket=bucket_name)
+        print("Created bucket")
+
+        # Put object
+        s3.put_object(Bucket=bucket_name, Key=object_key, Body=body)
+        print(f"Put object: {object_key}")
+
+        # Get object
+        resp = s3.get_object(Bucket=bucket_name, Key=object_key)
+        with closing(resp["Body"]) as body_stream:
+            data = body_stream.read()
+        print(f"Got object: {object_key} ({len(data)} bytes)")
+        if data != body:
+            print("ERROR: Retrieved object content mismatch", file=sys.stderr)
+            print(f"Expected: {body}", file=sys.stderr)
+            print(f"Retrieved: {data}", file=sys.stderr)
+            return 2
+
+        print("basics test succeeded ✔")
+        return 0
+
+    except ClientError as e:
+        print(f"AWS error: {e}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        return 1
+    finally:
+        # Cleanup (best-effort)
+        try:
+            s3.delete_object(Bucket=bucket_name, Key=object_key)
+        except Exception:
+            pass
+        try:
+            s3.delete_bucket(Bucket=bucket_name)
+        except Exception:
+            pass
+
+
+if __name__ == "__main__":
+    sys.exit(main())
