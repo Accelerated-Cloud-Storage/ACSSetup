@@ -51,6 +51,15 @@ echo "  Endpoint:     $S3_ENDPOINT"
 echo "  Region:       $S3_REGION"
 echo "  Profile:      $ACS_PROFILE"
 echo "  Addressing:   $S3_ADDRESSING_STYLE"
-echo "  Access Key:   $S3_ACCESS_KEY"
+# Determine safe display of access key (never print raw key)
+ACCESS_DISPLAY="[REDACTED]"
+if [ "${ACS_SECURE_DEBUG:-0}" = "1" ]; then
+    if [ -n "$S3_ACCESS_KEY" ]; then
+        ACCESS_DISPLAY="${S3_ACCESS_KEY:0:4}****"
+    else
+        ACCESS_DISPLAY="[unset]"
+    fi
+fi
+echo "  Access Key:   $ACCESS_DISPLAY"
 echo ""
 echo "Environment variables set. You can now run the example scripts."

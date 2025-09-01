@@ -58,9 +58,8 @@ aws s3api put-object --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
 echo "Put object"
 
 # Head object
-HEAD_OUTPUT=$(aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
-    --endpoint-url "$S3_ENDPOINT")
-CONTENT_LENGTH=$(echo "$HEAD_OUTPUT" | grep -o '"ContentLength": [0-9]*' | grep -o '[0-9]*')
+CONTENT_LENGTH=$(aws s3api head-object --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
+    --endpoint-url "$S3_ENDPOINT" --query 'ContentLength' --output text)
 EXPECTED_LENGTH=$(echo -n "$BODY" | wc -c)
 
 if [ "$CONTENT_LENGTH" != "$EXPECTED_LENGTH" ]; then

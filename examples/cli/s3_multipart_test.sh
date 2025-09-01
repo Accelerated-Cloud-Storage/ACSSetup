@@ -44,7 +44,7 @@ tr '\0' 'b' < "$PART2_FILE" > "${PART2_FILE}.tmp" && mv "${PART2_FILE}.tmp" "$PA
 
 # Create expected combined file for verification
 cat "$PART1_FILE" "$PART2_FILE" > "$COMBINED_FILE"
-TOTAL_SIZE=$(stat -c%s "$COMBINED_FILE")
+TOTAL_SIZE=$(wc -c < "$COMBINED_FILE" | tr -d '[:space:]')
 
 UPLOAD_ID=""
 
@@ -74,47 +74,48 @@ echo "Created bucket"
 UPLOAD_OUTPUT=$(aws s3api create-multipart-upload --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
     --content-type "application/octet-stream" \
     --endpoint-url "$S3_ENDPOINT")
-UPLOAD_ID=$(echo "$UPLOAD_OUTPUT" | grep -o '"UploadId": "[^"]*"' | cut -d'"' -f4)
+UPLOAD_ID=$(echo "$UPLOAD_OUTPUT" | jq -r '.UploadId // empty')
+if [ -z "$UPLOAD_ID" ]; then
+    echo "ERROR: Failed to obtain UploadId from create-multipart-upload response" >&2
+    exit 1
+fi
 echo "Initiated MPU: $UPLOAD_ID"
 
 # Upload part 1
 PART1_OUTPUT=$(aws s3api upload-part --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
     --part-number 1 --upload-id "$UPLOAD_ID" --body "$PART1_FILE" \
     --endpoint-url "$S3_ENDPOINT")
-ETAG1=$(echo "$PART1_OUTPUT" | jq -r '.ETag' 2>/dev/null || echo "$PART1_OUTPUT" | grep -o '"ETag": "[^"]*"' | sed 's/"ETag": "//;s/"//')
+# Extract and normalize ETag (remove any surrounding quotes)
+ETAG1=$(echo "$PART1_OUTPUT" | jq -r '.ETag // empty')
+ETAG1=${ETAG1//\"/}
+ETAG1=${ETAG1//\\/}
+if [ -z "$ETAG1" ]; then
+    echo "ERROR: Failed to extract ETag for part 1" >&2
+    exit 1
+fi
 echo "Uploaded part 1"
 
 # Upload part 2
 PART2_OUTPUT=$(aws s3api upload-part --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
     --part-number 2 --upload-id "$UPLOAD_ID" --body "$PART2_FILE" \
     --endpoint-url "$S3_ENDPOINT")
-ETAG2=$(echo "$PART2_OUTPUT" | jq -r '.ETag' 2>/dev/null || echo "$PART2_OUTPUT" | grep -o '"ETag": "[^"]*"' | sed 's/"ETag": "//;s/"//')
+# Extract and normalize ETag (remove any surrounding quotes)
+ETAG2=$(echo "$PART2_OUTPUT" | jq -r '.ETag // empty')
+ETAG2=${ETAG2//\"/}
+ETAG2=${ETAG2//\\/}
+if [ -z "$ETAG2" ]; then
+    echo "ERROR: Failed to extract ETag for part 2" >&2
+    exit 1
+fi
 echo "Uploaded part 2"
 
-# Complete multipart upload
-# Ensure ETags are properly quoted for JSON
-if [[ "$ETAG1" != \"* ]]; then
-    ETAG1="\"$ETAG1\""
-fi
-if [[ "$ETAG2" != \"* ]]; then
-    ETAG2="\"$ETAG2\""
-fi
-
-PARTS_JSON=$(cat <<EOF
-{
-    "Parts": [
-        {
-            "ETag": $ETAG1,
-            "PartNumber": 1
-        },
-        {
-            "ETag": $ETAG2,
-            "PartNumber": 2
-        }
+# Complete multipart upload (build JSON safely with jq)
+PARTS_JSON=$(jq -n --arg e1 "$ETAG1" --arg e2 "$ETAG2" '{
+    Parts: [
+        {ETag: $e1, PartNumber: 1},
+        {ETag: $e2, PartNumber: 2}
     ]
-}
-EOF
-)
+}')
 
 aws s3api complete-multipart-upload --bucket "$BUCKET_NAME" --key "$OBJECT_KEY" \
     --upload-id "$UPLOAD_ID" --multipart-upload "$PARTS_JSON" \
