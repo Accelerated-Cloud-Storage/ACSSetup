@@ -14,20 +14,28 @@ cd /home/ec2-user/ACSExamples/examples/go
 go mod tidy
 ```
 
-### 2) Configure your client for ACS (endpoint, region, addressing style)
+### 2) Configure your environment for an S3-compatible endpoint
 
-Set the endpoint, region, addressing style, and credentials so the SDK targets ACS:
+Set these variables so the Go SDK targets your S3-compatible store:
 
 ```bash
-export S3_ENDPOINT="https://acceleratedprod.com"   # ACS S3 endpoint
-export S3_REGION="global"                           # ACS region
-export S3_ADDRESSING_STYLE="virtual"               # virtual | path | auto (ACS defaults to virtual)
+export S3_ENDPOINT="https://acceleratedprod.com"   # ACS S3-compatible endpoint URL
+export AWS_REGION="global"                          # Or set AWS_DEFAULT_REGION
+export S3_ADDRESSING_STYLE="virtual"               # virtual | path | auto
 
-export S3_ACCESS_KEY="ExampleAccessKey"
-export S3_SECRET_KEY="ExampleSecretKey"
+# S3-compatible credentials (standard AWS env vars)
+export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
+export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 ```
 
 ### 3) Run the examples
+
+### How client initialization works in these examples
+
+- The client sets `o.BaseEndpoint = aws.String(S3_ENDPOINT)` to target your endpoint.
+- Region is read from `AWS_REGION`/`AWS_DEFAULT_REGION` (fallback: `S3_REGION`).
+- Credentials use the default AWS provider chain (env vars, profiles, IAM, etc.).
+- Addressing style defaults to virtual; override with `S3_ADDRESSING_STYLE`.
 
 ```bash
 go run ./cmd/s3_basics

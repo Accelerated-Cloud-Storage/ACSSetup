@@ -17,20 +17,17 @@ def env(key: str, default: str) -> str:
 
 def main() -> int:
     endpoint_url = env("S3_ENDPOINT", "https://acceleratedprod.com")
-    region = env("S3_REGION", "global")
+    region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or env("S3_REGION", "global")
     bucket_prefix = env("BUCKET_PREFIX", "mpuploadtest")
-    access_key = env("S3_ACCESS_KEY", "ExampleAccessKey")
-    secret_key = env("S3_SECRET_KEY", "ExampleSecretKey")
     addressing_style = env("S3_ADDRESSING_STYLE", "virtual").lower()
     if addressing_style not in ("auto", "virtual", "path"):
         addressing_style = "virtual"
 
+    # This is the only change needed to use ACS
     s3 = boto3.client(
         "s3",
         endpoint_url=endpoint_url,
         region_name=region,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
         config=Config(signature_version="s3v4", s3={"addressing_style": addressing_style}),
     )
 

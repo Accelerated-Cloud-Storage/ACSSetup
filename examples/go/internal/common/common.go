@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -35,18 +34,22 @@ func RandomSuffix(n int) string {
 // NewS3Client builds an S3 client using env vars and returns the client and the resolved config values.
 func NewS3Client(ctx context.Context) (*s3.Client, ConfigValues, error) {
 	endpoint := Env("S3_ENDPOINT", "https://acceleratedprod.com")
-	region := Env("S3_REGION", "global")
-	accessKey := Env("S3_ACCESS_KEY", "ExampleAccessKey")
-	secretKey := Env("S3_SECRET_KEY", "ExampleSecretKey")
+	// Prefer AWS standard region envs, then fall back to S3_REGION
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = os.Getenv("AWS_DEFAULT_REGION")
+	}
+	if region == "" {
+		region = Env("S3_REGION", "global")
+	}
 	addr := Env("S3_ADDRESSING_STYLE", "virtual")
 	if addr != "virtual" && addr != "path" && addr != "auto" {
 		addr = "virtual"
 	}
 
-	// Load base AWS config with static creds and region
+	// Load base AWS config with region (credentials from default chain)
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
 	)
 	if err != nil {
 		return nil, ConfigValues{}, err
@@ -54,6 +57,7 @@ func NewS3Client(ctx context.Context) (*s3.Client, ConfigValues, error) {
 
 	usePath := addr == "path"
 
+	// This is the only change needed to use ACS
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		// Set a custom base endpoint for S3-compatible services
 		o.BaseEndpoint = aws.String(endpoint)

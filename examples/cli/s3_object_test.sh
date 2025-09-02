@@ -14,7 +14,13 @@ env_var() {
 
 # Configuration
 S3_ENDPOINT=$(env_var "S3_ENDPOINT" "https://acceleratedprod.com")
-S3_REGION=$(env_var "S3_REGION" "global")
+if [ -n "${AWS_REGION:-}" ]; then
+    S3_REGION="$AWS_REGION"
+elif [ -n "${AWS_DEFAULT_REGION:-}" ]; then
+    S3_REGION="$AWS_DEFAULT_REGION"
+else
+    S3_REGION=$(env_var "S3_REGION" "global")
+fi
 BUCKET_PREFIX=$(env_var "BUCKET_PREFIX" "objecttest")
 S3_ADDRESSING_STYLE=$(env_var "S3_ADDRESSING_STYLE" "virtual")
 
