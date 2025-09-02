@@ -28,8 +28,8 @@ Set the endpoint, region, addressing style, and credentials so boto3 targets ACS
 
 ```bash
 export S3_ENDPOINT="https://acceleratedprod.com"   # ACS S3-compatible endpoint URL
-export AWS_REGION="global"                          # Or set AWS_DEFAULT_REGION
-export S3_ADDRESSING_STYLE="virtual"               # virtual 
+export AWS_REGION="global"                         # Or set AWS_DEFAULT_REGION
+export S3_ADDRESSING_STYLE="virtual"               # ACS supports virtual addressing only
 
 # S3-compatible credentials (standard AWS env vars)
 export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
