@@ -22,17 +22,18 @@ pip install --upgrade pip
 pip install boto3
 ```
 
-### 3) Configure your client for ACS (endpoint, region, addressing style)
+### 3) Configure your environment for an S3-compatible endpoint
 
-Set the endpoint, region, addressing style, and credentials so boto3 targets ACS:
+Set the endpoint, region, addressing style, and credentials so boto3 targets ACS S3-compatible store:
 
 ```bash
-export S3_ENDPOINT="https://acceleratedprod.com"   # ACS S3 endpoint
-export S3_REGION="global"                           # ACS region
-export S3_ADDRESSING_STYLE="virtual"               # virtual | path | auto (ACS defaults to virtual)
+export S3_ENDPOINT="https://acceleratedprod.com"   # ACS S3-compatible endpoint URL
+export AWS_REGION="global"                          # Or set AWS_DEFAULT_REGION
+export S3_ADDRESSING_STYLE="virtual"               # virtual 
 
-export S3_ACCESS_KEY="ExampleAccessKey"
-export S3_SECRET_KEY="ExampleSecretKey"
+# S3-compatible credentials (standard AWS env vars)
+export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
+export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 ```
 
 ### 4) Run the examples
@@ -47,9 +48,15 @@ python s3_copy_test.py       # copy an object within a bucket
 python s3_multipart_test.py  # multipart upload (5 MiB + 2 MiB)
 ```
 
+### How client initialization works in these examples
+
+- The client is created with `endpoint_url=S3_ENDPOINT` to target your endpoint.
+- Region is taken from `AWS_REGION`/`AWS_DEFAULT_REGION` (fallback: `S3_REGION`).
+- Credentials use the default AWS provider chain (env vars, profiles, IAM, etc.).
+- Addressing style defaults to virtual; override with `S3_ADDRESSING_STYLE`.
+
 ### Notes
 
-- If your endpoint uses a self-signed certificate, you may need to configure system trust or set the AWS_CA_BUNDLE environment variable to your CA bundle path.
 - To deactivate the virtual environment, run:
 
 ```bash

@@ -14,10 +14,15 @@ env_var() {
 
 # Configuration
 S3_ENDPOINT=$(env_var "S3_ENDPOINT" "https://acceleratedprod.com")
-S3_REGION=$(env_var "S3_REGION" "global")
+if [ -n "${AWS_REGION:-}" ]; then
+    S3_REGION="$AWS_REGION"
+elif [ -n "${AWS_DEFAULT_REGION:-}" ]; then
+    S3_REGION="$AWS_DEFAULT_REGION"
+else
+    S3_REGION=$(env_var "S3_REGION" "global")
+fi
 BUCKET_PREFIX=$(env_var "BUCKET_PREFIX" "smoketest")
-S3_ACCESS_KEY=$(env_var "S3_ACCESS_KEY" "ExampleAccessKey")
-S3_SECRET_KEY=$(env_var "S3_SECRET_KEY" "ExampleSecretKey")
+# Credentials are sourced from the standard AWS SDK/CLI chain
 
 # Generate unique bucket name (ensure DNS-compliant)
 TIMESTAMP=$(date -u +%Y%m%d%H%M%S)

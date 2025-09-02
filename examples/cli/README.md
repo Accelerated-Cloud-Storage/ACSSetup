@@ -22,7 +22,21 @@ unzip awscliv2.zip
 sudo ./aws/install
 ```
 
-### 2) Configure AWS CLI for ACS
+### 2) Configure your environment for an S3-compatible endpoint
+
+To use these examples with your S3-compatible object store, set the following standard AWS variables and one ACS-specific variable for the endpoint:
+
+```bash
+# Required: S3-compatible endpoint URL and region
+export S3_ENDPOINT="https://acceleratedprod.com"   # ACS endpoint 
+export AWS_REGION="global"                         
+
+# Required: S3-compatible credentials (standard AWS env vars)
+export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
+export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
+
+export S3_ADDRESSING_STYLE="virtual"
+```
 
 You can configure the AWS CLI to work with ACS in several ways:
 
@@ -70,13 +84,20 @@ s3 =
 Set your credentials and run the helper script:
 
 ```bash
-export S3_ACCESS_KEY="YourActualAccessKey"
-export S3_SECRET_KEY="YourActualSecretKey"
+export AWS_ACCESS_KEY_ID="YourActualAccessKey"
+export AWS_SECRET_ACCESS_KEY="YourActualSecretKey"
 
 source ./configure.sh
 ```
 
 **Note**: This option creates a custom `acs-examples` profile without affecting your default AWS configuration.
+
+### How client initialization works in these examples
+
+- The scripts pass your endpoint explicitly with `--endpoint-url "$S3_ENDPOINT"`.
+- Credentials are resolved by the standard AWS chain (env vars, shared config, profiles, IAM, etc.).
+- Region comes from `AWS_REGION` or `AWS_DEFAULT_REGION` and falls back to `S3_REGION` if set.
+- Addressing style is set to virtual-hosted by default; you can override via `S3_ADDRESSING_STYLE`.
 
 ### 3) Run the examples
 
@@ -102,7 +123,6 @@ export AWS_PROFILE=acs-examples
 
 - **Default Profile (Options A & B)**: Uses your default AWS CLI configuration
 - **Custom Profile (Option C)**: Creates `acs-examples` profile without affecting your default AWS settings
-- **SSL**: Proper SSL verification is used automatically with the valid certificate
 - **Addressing**: Virtual-hosted-style addressing is configured for optimal compatibility
 
 
