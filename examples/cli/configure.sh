@@ -25,7 +25,7 @@ if [ -z "${AWS_REGION:-}" ] && [ -z "${AWS_DEFAULT_REGION:-}" ]; then
 fi
 
 # Configure AWS CLI with custom profile for ACS
-ACS_PROFILE="acs-examples"
+ACS_PROFILE="acs-setup"
 export AWS_PROFILE="$ACS_PROFILE"
 
 # Ensure .aws directory exists with proper permissions

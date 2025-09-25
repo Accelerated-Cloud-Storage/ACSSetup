@@ -1,6 +1,6 @@
-### S3 Examples (Go, AWS SDK v2)
+### S3 Setup (Go, AWS SDK v2)
 
-These examples demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
+These setup guides demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
 
 ### Prerequisites
 
@@ -10,7 +10,7 @@ These examples demonstrate S3-compatible operations using the AWS SDK for Go v2.
 ### 1) Initialize module and download deps
 
 ```bash
-cd /home/ec2-user/ACSExamples/examples/go
+cd /home/ec2-user/ACSSetup/examples/go
 go mod tidy
 ```
 
@@ -28,9 +28,9 @@ export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 ```
 
-### 3) Run the examples
+### 3) Run the setup guides
 
-### How client initialization works in these examples
+### How client initialization works in these setup guides
 
 - The client sets `o.BaseEndpoint = aws.String(S3_ENDPOINT)` to target your endpoint.
 - Region is read from `AWS_REGION`/`AWS_DEFAULT_REGION` (fallback: `S3_REGION`).

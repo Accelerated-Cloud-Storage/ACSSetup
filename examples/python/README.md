@@ -1,6 +1,6 @@
-### S3 Examples (boto3)
+### S3 Setup (boto3)
 
-These examples demonstrate S3-compatible operations using boto3, the AWS SDK for Python. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
+These setup guides demonstrate S3-compatible operations using boto3, the AWS SDK for Python. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
 
 ### Prerequisites
 
@@ -10,7 +10,7 @@ These examples demonstrate S3-compatible operations using boto3, the AWS SDK for
 ### 1) Create and activate a virtual environment
 
 ```bash
-cd /home/ec2-user/ACSExamples/examples/python
+cd /home/ec2-user/ACSSetup/examples/python
 python3 -m venv .venv
 source .venv/bin/activate
 ```
@@ -36,7 +36,7 @@ export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 ```
 
-### 4) Run the examples
+### 4) Run the setup guides
 
 Each script creates any required buckets/objects and cleans up after itself where applicable.
 
@@ -48,7 +48,7 @@ python s3_copy_test.py       # copy an object within a bucket
 python s3_multipart_test.py  # multipart upload (5 MiB + 2 MiB)
 ```
 
-### How client initialization works in these examples
+### How client initialization works in these setup guides
 
 - The client is created with `endpoint_url=S3_ENDPOINT` to target your endpoint.
 - Region is taken from `AWS_REGION`/`AWS_DEFAULT_REGION` (fallback: `S3_REGION`).

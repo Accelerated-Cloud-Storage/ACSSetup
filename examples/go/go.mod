@@ -1,4 +1,4 @@
-module s3examples
+module s3setup
 
 go 1.21
 

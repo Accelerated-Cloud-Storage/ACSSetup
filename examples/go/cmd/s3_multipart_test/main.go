@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"s3examples/internal/common"
+	"s3setup/internal/common"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 

@@ -1,6 +1,6 @@
-### S3 Examples (AWS CLI)
+### S3 Setup (AWS CLI)
 
-These examples demonstrate S3-compatible operations using the AWS CLI. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper configuration, error handling, and resource cleanup.
+These setup guides demonstrate S3-compatible operations using the AWS CLI. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper configuration, error handling, and resource cleanup.
 
 ### Prerequisites
 
@@ -10,7 +10,7 @@ These examples demonstrate S3-compatible operations using the AWS CLI. They show
 
 ### 1) Install required tools
 
-These examples require `aws` (CLI), `jq`, and `openssl`.
+These setup guides require `aws` (CLI), `jq`, and `openssl`.
 If you don't have them installed:
 
 ```bash
@@ -25,7 +25,7 @@ sudo ./aws/install
 
 ### 2) Configure your environment for an S3-compatible endpoint
 
-To use these examples with your S3-compatible object store, set the following standard AWS variables and one ACS-specific variable for the endpoint:
+To use these setup guides with your S3-compatible object store, set the following standard AWS variables and one ACS-specific variable for the endpoint:
 
 ```bash
 # Required: S3-compatible endpoint URL and region
@@ -91,9 +91,9 @@ export AWS_SECRET_ACCESS_KEY="YourActualSecretKey"
 source ./configure.sh
 ```
 
-**Note**: This option creates a custom `acs-examples` profile without affecting your default AWS configuration.
+**Note**: This option creates a custom `acs-setup` profile without affecting your default AWS configuration.
 
-### How client initialization works in these examples
+### How client initialization works in these setup guides
 
 - The scripts pass your endpoint explicitly with `--endpoint-url "$S3_ENDPOINT"`.
 - Credentials are resolved by the standard AWS chain (env vars, shared config, profiles, IAM, etc.).
@@ -102,11 +102,11 @@ source ./configure.sh
   - Precedence (highest to lowest):
     1) Explicit setting (CLI flag like `aws s3api --endpoint-url ...` plus `aws configure set s3.addressing_style ...`, or SDK client option such as `o.UsePathStyle`)
     2) SDK/shared config (`~/.aws/config` `s3.addressing_style`)
-    3) `S3_ADDRESSING_STYLE` environment variable (examples convenience)
+    3) `S3_ADDRESSING_STYLE` environment variable (setup convenience)
     4) Default: virtual-hosted-style
   - You can always override via an explicit CLI/config setting or client initialization option.
 
-### 3) Run the examples
+### 3) Run the setup guides
 
 Each script creates any required buckets/objects and cleans up after itself where applicable.
 
@@ -119,7 +119,7 @@ Each script creates any required buckets/objects and cleans up after itself wher
 ./s3_multipart_test.sh           # multipart upload (5 MiB + 2 MiB)
 
 # If you used Option C (custom profile):
-export AWS_PROFILE=acs-examples
+export AWS_PROFILE=acs-setup
 ./s3_basics.sh                   # (same commands as above)
 
 # Or run all tests at once (automatically configures custom profile)
@@ -129,7 +129,7 @@ export AWS_PROFILE=acs-examples
 ### Notes
 
 - **Default Profile (Options A & B)**: Uses your default AWS CLI configuration
-- **Custom Profile (Option C)**: Creates `acs-examples` profile without affecting your default AWS settings
+- **Custom Profile (Option C)**: Creates `acs-setup` profile without affecting your default AWS settings
 - **Addressing**: Virtual-hosted-style addressing is configured for optimal compatibility
 
 
