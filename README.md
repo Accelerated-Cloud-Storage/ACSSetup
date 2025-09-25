@@ -1,5 +1,5 @@
-# ACSExamples
-Examples using the S3 compatible API to help users get onboard and start using ACS
+# ACSSetup
+Setup guides using the S3 compatible API to help users get onboard and start using ACS
 
 ### Language guides
 

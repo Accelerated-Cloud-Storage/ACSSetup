@@ -6,7 +6,7 @@
 # Note: Don't use 'set -e' here since we want to continue testing even if individual tests fail
 
 echo "========================================="
-echo "Running AWS CLI S3 Examples Test Suite"
+echo "Running AWS CLI S3 Setup Test Suite"
 echo "========================================="
 echo ""
 
