@@ -15,6 +15,23 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+### Alternative: Setup with UV
+
+```bash
+cd /home/ec2-user/ACSSetup/examples/python
+
+# Create virtual environment with UV
+uv venv
+
+# Activate virtual environment
+source .venv/bin/activate  # On macOS/Linux
+# or
+.venv\Scripts\activate     # On Windows
+
+# Install boto3 using UV
+uv pip install boto3
+```
+
 ### 2) Install dependencies
 
 ```bash
@@ -62,5 +79,4 @@ python s3_multipart_test.py  # multipart upload (5 MiB + 2 MiB)
 ```bash
 deactivate
 ```
-
-
+```
