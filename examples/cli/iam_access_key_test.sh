@@ -17,7 +17,7 @@ if [ -n "${AWS_REGION:-}" ]; then
 elif [ -n "${AWS_DEFAULT_REGION:-}" ]; then
     IAM_REGION="$AWS_DEFAULT_REGION"
 else
-    IAM_REGION=$(env_var "IAM_REGION" "aws-global")
+    IAM_REGION=$(env_var "IAM_REGION" "global")
 fi
 
 ACCESS_KEY_ID=""

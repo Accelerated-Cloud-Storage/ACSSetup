@@ -15,7 +15,6 @@ def env(key: str, default: str) -> str:
 def main() -> int:
     endpoint_url = env("IAM_ENDPOINT", env("S3_ENDPOINT", "https://acceleratedprod.com"))
     region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION") or env("IAM_REGION", "global")
-    user_name = env("IAM_USER_NAME", "").strip()
 
     iam_client = boto3.client(
         "iam",
@@ -26,35 +25,28 @@ def main() -> int:
 
     print(f"Using endpoint: {endpoint_url}")
     print(f"Region:        {region}")
-    if user_name:
-        print(f"User:          {user_name}")
-    else:
-        print("User:          [current IAM identity]")
+    print("User:          [current IAM identity]")
 
     access_key_id = None
     try:
-        create_kwargs = {"UserName": user_name} if user_name else {}
-        created = iam_client.create_access_key(**create_kwargs)
+        created = iam_client.create_access_key()
         access_key_id = created.get("AccessKey", {}).get("AccessKeyId")
         if not access_key_id:
             print("ERROR: Failed to create access key", file=sys.stderr)
             return 1
         print(f"Created access key: {access_key_id[:4]}****")
 
-        list_kwargs = {"UserName": user_name} if user_name else {}
-        listed = iam_client.list_access_keys(**list_kwargs)
+        listed = iam_client.list_access_keys()
         ids = {meta["AccessKeyId"] for meta in listed.get("AccessKeyMetadata", [])}
         if access_key_id not in ids:
             print("ERROR: Created access key not found in list_access_keys", file=sys.stderr)
             return 2
         print("Listed access keys (found created key)")
 
-        update_kwargs = {"UserName": user_name, "AccessKeyId": access_key_id} if user_name else {"AccessKeyId": access_key_id}
-        iam_client.update_access_key(Status="Inactive", **update_kwargs)
+        iam_client.update_access_key(AccessKeyId=access_key_id, Status="Inactive")
         print("Updated access key to inactive")
 
-        delete_kwargs = {"UserName": user_name, "AccessKeyId": access_key_id} if user_name else {"AccessKeyId": access_key_id}
-        iam_client.delete_access_key(**delete_kwargs)
+        iam_client.delete_access_key(AccessKeyId=access_key_id)
         print("Deleted access key")
         access_key_id = None
 
@@ -70,8 +62,7 @@ def main() -> int:
     finally:
         if access_key_id:
             try:
-                delete_kwargs = {"UserName": user_name, "AccessKeyId": access_key_id} if user_name else {"AccessKeyId": access_key_id}
-                iam_client.delete_access_key(**delete_kwargs)
+                iam_client.delete_access_key(AccessKeyId=access_key_id)
             except Exception:
                 pass
 
