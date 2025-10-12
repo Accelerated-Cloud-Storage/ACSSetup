@@ -1,6 +1,6 @@
-### S3 Setup (Go, AWS SDK v2)
+### S3 & IAM Setup (Go, AWS SDK v2)
 
-These setup guides demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
+These setup guides demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, multipart uploads, and an IAM access key lifecycle example that works with your current IAM identity or a specified user.
 
 ### Prerequisites
 
@@ -26,23 +26,13 @@ export S3_ADDRESSING_STYLE="virtual"               # virtual | path | auto
 # S3-compatible credentials (standard AWS env vars)
 export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
+
+# Optional IAM override
+export IAM_ENDPOINT="$S3_ENDPOINT"  # IAM endpoint override
 ```
 
 ### 3) Run the setup guides
 
 ### How client initialization works in these setup guides
 
-- The client sets `o.BaseEndpoint = aws.String(S3_ENDPOINT)` to target your endpoint.
-- Region is read from `AWS_REGION`/`AWS_DEFAULT_REGION` (fallback: `S3_REGION`).
-- Credentials use the default AWS provider chain (env vars, profiles, IAM, etc.).
-- Addressing style defaults to virtual; override with `S3_ADDRESSING_STYLE`.
-
-```bash
-go run ./cmd/s3_basics
-go run ./cmd/s3_bucket_test
-go run ./cmd/s3_object_test
-go run ./cmd/s3_copy_test
-go run ./cmd/s3_multipart_test
-```
-
-
+- The client sets `

@@ -1,6 +1,6 @@
-### S3 Setup (AWS CLI)
+### S3 & IAM Setup (AWS CLI)
 
-These setup guides demonstrate S3-compatible operations using the AWS CLI. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper configuration, error handling, and resource cleanup.
+These setup guides demonstrate S3-compatible operations using the AWS CLI. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads, plus an IAM access key lifecycle example that works with your existing IAM identity or a specified user.
 
 ### Prerequisites
 
@@ -37,6 +37,9 @@ export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
 
 export S3_ADDRESSING_STYLE="virtual"  # Note: this env var alone does NOT change AWS CLI behavior unless applied via configure.sh or written to ~/.aws/config (e.g., `aws configure set s3.addressing_style virtual`)
+
+# Optional IAM variable
+export IAM_ENDPOINT="$S3_ENDPOINT"   # IAM endpoint override (defaults to S3 endpoint)
 ```
 
 You can configure the AWS CLI to work with ACS in several ways:
@@ -117,13 +120,14 @@ Each script creates any required buckets/objects and cleans up after itself wher
 ./s3_object_test.sh              # object put/head/get/list
 ./s3_copy_test.sh                # copy an object within a bucket
 ./s3_multipart_test.sh           # multipart upload (5 MiB + 2 MiB)
+./iam_access_key_test.sh         # IAM access key lifecycle (create/list/update/delete)
 
 # If you used Option C (custom profile):
 export AWS_PROFILE=acs-setup
 ./s3_basics.sh                   # (same commands as above)
 
 # Or run all tests at once (automatically configures custom profile)
-./run_all_tests.sh               # runs all tests with automatic configuration
+./run_all_tests.sh               # runs all S3 tests with automatic configuration
 ```
 
 ### Notes
@@ -131,5 +135,6 @@ export AWS_PROFILE=acs-setup
 - **Default Profile (Options A & B)**: Uses your default AWS CLI configuration
 - **Custom Profile (Option C)**: Creates `acs-setup` profile without affecting your default AWS settings
 - **Addressing**: Virtual-hosted-style addressing is configured for optimal compatibility
+- **IAM example**: Uses IAM_ENDPOINT when provided; otherwise falls back to S3_ENDPOINT
 
 
