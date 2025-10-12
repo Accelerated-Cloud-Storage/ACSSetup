@@ -1,6 +1,6 @@
-### S3 Setup (boto3)
+### S3 & IAM Setup (boto3)
 
-These setup guides demonstrate S3-compatible operations using boto3, the AWS SDK for Python. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads with proper error handling and resource cleanup.
+These setup guides demonstrate S3-compatible operations using boto3, the AWS SDK for Python. They showcase essential S3 operations including bucket management, object CRUD operations, copying, multipart uploads, and an IAM access key lifecycle example that can operate on your current IAM identity or a named user.
 
 ### Prerequisites
 
@@ -51,6 +51,9 @@ export S3_ADDRESSING_STYLE="virtual"               # ACS supports virtual addres
 # S3-compatible credentials (standard AWS env vars)
 export AWS_ACCESS_KEY_ID="<YOUR_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<YOUR_SECRET_ACCESS_KEY>"
+
+# Optional IAM-specific override
+export IAM_ENDPOINT="$S3_ENDPOINT"  # IAM endpoint override
 ```
 
 ### 4) Run the setup guides
@@ -63,6 +66,7 @@ python s3_bucket_test.py     # bucket create/head/list/delete
 python s3_object_test.py     # object put/head/get/list
 python s3_copy_test.py       # copy an object within a bucket
 python s3_multipart_test.py  # multipart upload (5 MiB + 2 MiB)
+python iam_access_key_test.py # IAM access key lifecycle (create/list/update/delete)
 ```
 
 ### How client initialization works in these setup guides
