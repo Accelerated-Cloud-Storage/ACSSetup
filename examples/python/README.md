@@ -66,7 +66,7 @@ python s3_bucket_test.py     # bucket create/head/list/delete
 python s3_object_test.py     # object put/head/get/list
 python s3_copy_test.py       # copy an object within a bucket
 python s3_multipart_test.py  # multipart upload (5 MiB + 2 MiB)
-python iam_access_key_test.py # IAM access key lifecycle (create/list/update/delete)
+python iam_examples.py       # IAM access key lifecycle with bucket-scoped policy (create/attach/detach/delete)
 ```
 
 ### How client initialization works in these setup guides

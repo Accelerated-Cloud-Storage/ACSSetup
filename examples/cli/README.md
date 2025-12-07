@@ -120,7 +120,7 @@ Each script creates any required buckets/objects and cleans up after itself wher
 ./s3_object_test.sh              # object put/head/get/list
 ./s3_copy_test.sh                # copy an object within a bucket
 ./s3_multipart_test.sh           # multipart upload (5 MiB + 2 MiB)
-./iam_access_key_test.sh         # IAM access key lifecycle (create/list/update/delete)
+./iam_examples.sh                # IAM access key lifecycle with bucket-scoped policy (create/attach/detach/delete)
 
 # If you used Option C (custom profile):
 export AWS_PROFILE=acs-setup

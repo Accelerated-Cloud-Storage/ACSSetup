@@ -33,6 +33,17 @@ export IAM_ENDPOINT="$S3_ENDPOINT"  # IAM endpoint override
 
 ### 3) Run the setup guides
 
+Each program creates any required buckets/objects and cleans up after itself where applicable.
+
+```bash
+cd cmd/s3_basics && go run .             # create bucket, put/get a small object
+cd cmd/s3_bucket_test && go run .        # bucket create/head/list/delete
+cd cmd/s3_object_test && go run .        # object put/head/get/list
+cd cmd/s3_copy_test && go run .          # copy an object within a bucket
+cd cmd/s3_multipart_test && go run .     # multipart upload (5 MiB + 2 MiB)
+cd cmd/iam_examples && go run .          # IAM access key lifecycle with bucket-scoped policy (create/attach/detach/delete)
+```
+
 ### How client initialization works in these setup guides
 
 - The client sets `
