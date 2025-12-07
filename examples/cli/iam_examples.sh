@@ -146,6 +146,67 @@ if ! echo "$ATTACHED_POLICIES" | grep -q "$POLICY_ARN"; then
 fi
 echo "Verified policy attachment"
 
+# Extract secret access key from the create response
+SECRET_ACCESS_KEY=$(echo "$CREATE_OUTPUT" | jq -r '.AccessKey.SecretAccessKey // empty')
+if [ -z "$SECRET_ACCESS_KEY" ]; then
+    echo "ERROR: Failed to get secret access key" >&2
+    exit 5
+fi
+
+# Test policy enforcement using the limited access key
+export AWS_ACCESS_KEY_ID="$ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="$SECRET_ACCESS_KEY"
+
+# Test 1: Verify we CAN access the allowed bucket (should succeed)
+if aws s3api head-bucket \
+    --bucket "$BUCKET_NAME" \
+    --endpoint-url "$S3_ENDPOINT" \
+    --output json >/dev/null 2>&1; then
+    echo "✓ Policy allows access to bucket: $BUCKET_NAME"
+else
+    echo "ERROR: Policy should allow access to $BUCKET_NAME" >&2
+    exit 6
+fi
+
+# Test 2: Try to create a DIFFERENT bucket (should fail due to policy restriction)
+UNAUTHORIZED_BUCKET="unauthorized-bucket-$(uuidgen | tr '[:upper:]' '[:lower:]')"
+if aws s3api create-bucket \
+    --bucket "$UNAUTHORIZED_BUCKET" \
+    --endpoint-url "$S3_ENDPOINT" \
+    --output json >/dev/null 2>&1; then
+    echo "ERROR: Policy should have denied creating bucket: $UNAUTHORIZED_BUCKET" >&2
+    # Clean up if it somehow succeeded
+    aws s3api delete-bucket --bucket "$UNAUTHORIZED_BUCKET" --endpoint-url "$S3_ENDPOINT" >/dev/null 2>&1 || true
+    exit 7
+else
+    echo "✓ Policy correctly denied access to unauthorized bucket: $UNAUTHORIZED_BUCKET"
+fi
+
+# Test 3: Verify we CAN put an object in the allowed bucket (should succeed)
+TEST_KEY="test-object-$(uuidgen).txt"
+if echo "test data" | aws s3api put-object \
+    --bucket "$BUCKET_NAME" \
+    --key "$TEST_KEY" \
+    --body /dev/stdin \
+    --endpoint-url "$S3_ENDPOINT" \
+    --output json >/dev/null 2>&1; then
+    echo "✓ Policy allows writing to bucket: $BUCKET_NAME/$TEST_KEY"
+    # Clean up test object
+    aws s3api delete-object \
+        --bucket "$BUCKET_NAME" \
+        --key "$TEST_KEY" \
+        --endpoint-url "$S3_ENDPOINT" \
+        --output json >/dev/null 2>&1
+    echo "  Cleaned up test object: $TEST_KEY"
+else
+    echo "ERROR: Policy should allow writing to $BUCKET_NAME" >&2
+    exit 8
+fi
+
+# Restore original credentials
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+
 # Update access key status
 aws iam update-access-key \
     --access-key-id "$ACCESS_KEY_ID" \

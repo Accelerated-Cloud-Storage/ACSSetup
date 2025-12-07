@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -175,6 +177,72 @@ func run(ctx context.Context) int {
 		return 4
 	}
 	fmt.Println("Verified policy attachment")
+
+	// Test policy enforcement: Create a new S3 client with the limited access key
+	secretKey := created.AccessKey.SecretAccessKey
+	if secretKey == nil {
+		fmt.Fprintln(os.Stderr, "ERROR: Failed to get secret access key")
+		return 5
+	}
+
+	limitedCfg, err := config.LoadDefaultConfig(ctx,
+		config.WithRegion(region),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
+			*accessKeyID,
+			*secretKey,
+			"",
+		)),
+	)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "create limited config error: %v\n", err)
+		return 1
+	}
+
+	limitedS3Client := s3.NewFromConfig(limitedCfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(endpoint)
+		o.UsePathStyle = false
+		o.Region = region
+	})
+
+	// Test 1: Verify we CAN access the allowed bucket (should succeed)
+	if _, err := limitedS3Client.HeadBucket(ctx, &s3.HeadBucketInput{Bucket: bucketName}); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: Policy should allow access to %s: %v\n", *bucketName, err)
+		return 6
+	}
+	fmt.Printf("✓ Policy allows access to bucket: %s\n", *bucketName)
+
+	// Test 2: Try to create a DIFFERENT bucket (should fail due to policy restriction)
+	unauthorizedBucket := fmt.Sprintf("unauthorized-bucket-%s", uuid.New().String())
+	if _, err := limitedS3Client.CreateBucket(ctx, &s3.CreateBucketInput{
+		Bucket: aws.String(unauthorizedBucket),
+	}); err == nil {
+		fmt.Fprintf(os.Stderr, "ERROR: Policy should have denied creating bucket: %s\n", unauthorizedBucket)
+		// Clean up if it somehow succeeded
+		_, _ = limitedS3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{Bucket: aws.String(unauthorizedBucket)})
+		return 7
+	}
+	fmt.Printf("✓ Policy correctly denied access to unauthorized bucket: %s\n", unauthorizedBucket)
+
+	// Test 3: Verify we CAN put an object in the allowed bucket (should succeed)
+	testKey := fmt.Sprintf("test-object-%s.txt", uuid.New().String())
+	testData := []byte("test data")
+	if _, err := limitedS3Client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: bucketName,
+		Key:    aws.String(testKey),
+		Body:   bytes.NewReader(testData),
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: Policy should allow writing to %s: %v\n", *bucketName, err)
+		return 8
+	}
+	fmt.Printf("✓ Policy allows writing to bucket: %s/%s\n", *bucketName, testKey)
+
+	// Clean up test object
+	if _, err := limitedS3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: bucketName,
+		Key:    aws.String(testKey),
+	}); err == nil {
+		fmt.Printf("  Cleaned up test object: %s\n", testKey)
+	}
 
 	// Update access key status
 	if _, err := iamClient.UpdateAccessKey(ctx, &iam.UpdateAccessKeyInput{

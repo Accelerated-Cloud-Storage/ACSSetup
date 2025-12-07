@@ -57,7 +57,6 @@ def main() -> int:
         
         # For policy attachment, UserName parameter should be the access key ID
         user_name = access_key_id
-        print(f"Using UserName (access key ID) for policy operations: {user_name[:4]}****")
 
         # List access keys to verify
         listed = iam_client.list_access_keys()
@@ -106,6 +105,59 @@ def main() -> int:
             print("ERROR: Policy not found in attached policies", file=sys.stderr)
             return 4
         print("Verified policy attachment")
+
+        # Test policy enforcement: Create a new S3 client with the limited access key
+        secret_key = created.get("AccessKey", {}).get("SecretAccessKey")
+        if not secret_key:
+            print("ERROR: Failed to get secret access key", file=sys.stderr)
+            return 5
+        
+        limited_s3_client = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            region_name=region,
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_key,
+            config=Config(signature_version="v4", s3={"addressing_style": "virtual"}),
+        )
+
+        # Test 1: Verify we CAN access the allowed bucket (should succeed)
+        try:
+            limited_s3_client.head_bucket(Bucket=bucket_name)
+            print(f"✓ Policy allows access to bucket: {bucket_name}")
+        except ClientError as e:
+            print(f"ERROR: Policy should allow access to {bucket_name}: {e}", file=sys.stderr)
+            return 6
+
+        # Test 2: Try to create a DIFFERENT bucket (should fail due to policy restriction)
+        unauthorized_bucket = f"unauthorized-bucket-{uuid.uuid4()}"
+        try:
+            limited_s3_client.create_bucket(Bucket=unauthorized_bucket)
+            print(f"ERROR: Policy should have denied creating bucket: {unauthorized_bucket}", file=sys.stderr)
+            # Clean up if it somehow succeeded
+            try:
+                limited_s3_client.delete_bucket(Bucket=unauthorized_bucket)
+            except Exception:
+                pass
+            return 7
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code", "")
+            if error_code in ["AccessDenied", "Forbidden"]:
+                print(f"✓ Policy correctly denied access to unauthorized bucket: {unauthorized_bucket}")
+            else:
+                print(f"WARNING: Expected AccessDenied but got {error_code}: {e}", file=sys.stderr)
+
+        # Test 3: Verify we CAN put an object in the allowed bucket (should succeed)
+        test_key = f"test-object-{uuid.uuid4()}.txt"
+        try:
+            limited_s3_client.put_object(Bucket=bucket_name, Key=test_key, Body=b"test data")
+            print(f"✓ Policy allows writing to bucket: {bucket_name}/{test_key}")
+            # Clean up test object
+            limited_s3_client.delete_object(Bucket=bucket_name, Key=test_key)
+            print(f"  Cleaned up test object: {test_key}")
+        except ClientError as e:
+            print(f"ERROR: Policy should allow writing to {bucket_name}: {e}", file=sys.stderr)
+            return 8
 
         # Update access key status
         iam_client.update_access_key(AccessKeyId=access_key_id, Status="Inactive")
