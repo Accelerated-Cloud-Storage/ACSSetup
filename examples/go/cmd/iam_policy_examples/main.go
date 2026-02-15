@@ -220,6 +220,7 @@ func run(ctx context.Context) int {
 	fmt.Printf("Deleted test bucket: %s\n", *bucketName)
 	bucketName = nil
 
-	fmt.Println("IAM access key and policy test succeeded ✔")
+	fmt.Println("IAM policy example test succeeded ✔")
 	return 0
 }
+

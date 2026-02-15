@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# IAM access key and policy lifecycle test using AWS CLI
+# IAM policy lifecycle example using AWS CLI
 # Creates a bucket, access key, IAM policy limiting access to that bucket,
 # attaches the policy, then cleans up in reverse order
 
@@ -87,7 +87,7 @@ KEY_LIST=$(aws iam list-access-keys \
     --endpoint-url "$IAM_ENDPOINT" \
     --query 'AccessKeyMetadata[].AccessKeyId' \
     --output text)
-if ! echo "$KEY_LIST" | grep -q "$ACCESS_KEY_ID"; then
+if ! echo "$KEY_LIST" | grep -Fq "$ACCESS_KEY_ID"; then
     echo "ERROR: Created access key not found in list" >&2
     exit 2
 fi
@@ -140,7 +140,7 @@ ATTACHED_POLICIES=$(aws iam list-attached-user-policies \
     --endpoint-url "$IAM_ENDPOINT" \
     --query 'AttachedPolicies[].PolicyArn' \
     --output text)
-if ! echo "$ATTACHED_POLICIES" | grep -q "$POLICY_ARN"; then
+if ! echo "$ATTACHED_POLICIES" | grep -Fq "$POLICY_ARN"; then
     echo "ERROR: Policy not found in attached policies" >&2
     exit 4
 fi
@@ -186,5 +186,5 @@ aws s3api delete-bucket \
 echo "Deleted test bucket: $BUCKET_NAME"
 BUCKET_NAME=""
 
-echo "IAM access key and policy test succeeded ✔"
+echo "IAM policy example test succeeded ✔"
 

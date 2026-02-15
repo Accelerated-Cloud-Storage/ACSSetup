@@ -54,7 +54,7 @@ def main() -> int:
             print("ERROR: Failed to create access key", file=sys.stderr)
             return 1
         print(f"Created access key: {access_key_id[:4]}****")
-        
+
         # For policy attachment, UserName parameter should be the access key ID
         user_name = access_key_id
         print(f"Using UserName (access key ID) for policy operations: {user_name[:4]}****")
@@ -130,7 +130,7 @@ def main() -> int:
         print(f"Deleted test bucket: {bucket_name}")
         bucket_name = None
 
-        print("IAM access key and policy test succeeded ✔")
+        print("IAM policy example test succeeded ✔")
         return 0
 
     except ClientError as e:
@@ -164,5 +164,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
 

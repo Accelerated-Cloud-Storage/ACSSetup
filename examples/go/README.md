@@ -1,6 +1,6 @@
 ### S3 & IAM Setup (Go, AWS SDK v2)
 
-These setup guides demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, multipart uploads, and an IAM access key lifecycle example that works with your current IAM identity or a specified user.
+These setup guides demonstrate S3-compatible operations using the AWS SDK for Go v2. They showcase essential S3 operations including bucket management, object CRUD operations, copying, multipart uploads, plus IAM examples for policy lifecycle and IAM user lifecycle APIs.
 
 ### Prerequisites
 
@@ -41,7 +41,8 @@ cd cmd/s3_bucket_test && go run .        # bucket create/head/list/delete
 cd cmd/s3_object_test && go run .        # object put/head/get/list
 cd cmd/s3_copy_test && go run .          # copy an object within a bucket
 cd cmd/s3_multipart_test && go run .     # multipart upload (5 MiB + 2 MiB)
-cd cmd/iam_examples && go run .          # IAM access key lifecycle with bucket-scoped policy (create/attach/detach/delete)
+cd cmd/iam_policy_examples && go run .   # IAM policy lifecycle with bucket-scoped policy (create/attach/detach/delete)
+cd cmd/iam_user_examples && go run .     # IAM user lifecycle APIs (create/get/update/list/delete)
 ```
 
 ### How client initialization works in these setup guides
