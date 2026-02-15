@@ -1,6 +1,6 @@
 ### S3 & IAM Setup (AWS CLI)
 
-These setup guides demonstrate S3-compatible operations using the AWS CLI. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads, plus an IAM access key lifecycle example that works with your existing IAM identity or a specified user.
+These setup guides demonstrate S3-compatible operations using the AWS CLI. They showcase essential S3 operations including bucket management, object CRUD operations, copying, and multipart uploads, plus IAM examples for policy lifecycle and IAM user lifecycle APIs.
 
 ### Prerequisites
 
@@ -120,7 +120,8 @@ Each script creates any required buckets/objects and cleans up after itself wher
 ./s3_object_test.sh              # object put/head/get/list
 ./s3_copy_test.sh                # copy an object within a bucket
 ./s3_multipart_test.sh           # multipart upload (5 MiB + 2 MiB)
-./iam_examples.sh                # IAM access key lifecycle with bucket-scoped policy (create/attach/detach/delete)
+./iam_policy_examples.sh         # IAM policy lifecycle with bucket-scoped policy (create/attach/detach/delete)
+./iam_user_examples.sh           # IAM user lifecycle APIs (create/get/update/list/delete)
 
 # If you used Option C (custom profile):
 export AWS_PROFILE=acs-setup
@@ -135,6 +136,7 @@ export AWS_PROFILE=acs-setup
 - **Default Profile (Options A & B)**: Uses your default AWS CLI configuration
 - **Custom Profile (Option C)**: Creates `acs-setup` profile without affecting your default AWS settings
 - **Addressing**: Virtual-hosted-style addressing is configured for optimal compatibility
-- **IAM example**: Uses IAM_ENDPOINT when provided; otherwise falls back to S3_ENDPOINT
+- **IAM policy example**: Uses IAM_ENDPOINT when provided; otherwise falls back to S3_ENDPOINT
+- **IAM user example**: Creates and renames a temporary user, verifies with get/list, then deletes
 
 
